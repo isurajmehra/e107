@@ -64,7 +64,7 @@ class e_object
      * @see getId()
      *
      * @param   string $name
-     * @return  e_object
+     * @return  self
      */
     public function setFieldIdName($name)
     {
@@ -77,7 +77,6 @@ class e_object
      *
      * @see getId()
      *
-     * @param   string $name
      * @return  string
      */
     public function getFieldIdName()
@@ -102,8 +101,8 @@ class e_object
 
     /**
      * Set object primary id field value
-     *
-     * @return e_object
+     * @param mixed $id
+     * @return self
      */
     public function setId($id)
     {
@@ -141,7 +140,7 @@ class e_object
      *
      * @param string $key
      * @param mixed $value
-     * @return e_object
+     * @return self
      */
 	public function set($key, $value)
     {
@@ -151,7 +150,8 @@ class e_object
 
     /**
      * Set object data
-     * @return e_object
+     * @param array $data
+     * @return self
      */
 	public function setData($data)
     {
@@ -161,7 +161,8 @@ class e_object
 
     /**
      * Update object data
-     * @return e_object
+     * @param array $data
+     * @return self
      */
 	public function addData($data)
     {
@@ -176,7 +177,7 @@ class e_object
      * Remove object data key
      *
      * @param string $key
-     * @return e_object
+     * @return self
      */
 	public function remove($key)
     {
@@ -187,7 +188,7 @@ class e_object
     /**
      * Reset  object data key
      *
-     * @return e_object
+     * @return self
      */
 	public function removeData()
     {
@@ -227,7 +228,7 @@ class e_object
 	/**
 	 * Set parameter array
 	 * @param array $params
-	 * @return e_object
+	 * @return self
 	 */
 	public function setParams(array $params)
 	{
@@ -238,7 +239,7 @@ class e_object
 	/**
 	 * Update parameter array
 	 * @param array $params
-	 * @return e_object
+	 * @return self
 	 */
 	public function updateParams(array $params)
 	{
@@ -265,7 +266,7 @@ class e_object
 	 *
 	 * @param string $key
 	 * @param mixed $value
-	 * @return e_object
+	 * @return self
 	 */
 	public function setParam($key, $value)
 	{
@@ -283,6 +284,7 @@ class e_object
 	 *
 	 * @param string $key
 	 * @param mixed $default
+     * @return mixed
 	 */
 	public function getParam($key, $default = null)
 	{
@@ -400,6 +402,7 @@ class e_object
 	 * NOTE: works on PHP 5.1.0+
 	 *
 	 * @param string $key
+     * @return void
 	 */
 	public function __unset($key)
 	{
@@ -442,7 +445,6 @@ class e_vars extends e_object
 	 * Add array data to the object (merge with existing)
 	 *
 	 * @param array $array
-	 * @return e_vars
 	 */
 	public function addVars(array $array)
 	{
@@ -492,62 +494,15 @@ class e_vars extends e_object
 	}
 }
 
-/**
- * Base e107 Model class
- *
- * @package e107
- * @category e107_handlers
- * @version 1.0
- * @author SecretR
- * @copyright Copyright (C) 2010, e107 Inc.
- */
-class e_model extends e_object
-{
+abstract class e_model_abstract extends e_object {
     /**
-     * Data structure (types) array, required for {@link e_front_model::sanitize()} method,
-     * it also serves as a map (find data) for building DB queries,
-     * copy/sanitize posted data to object data, etc.
+     * Current model DB table, used in all db calls
      *
-     * This can/should be overwritten by extending the class
+     * This can/should be overwritten/set by extending the class
      *
-     * @var array
-     */
-    protected $_data_fields = array();
-
-
-
-	/**
-	 * Current model field types eg. text, bbarea, dropdown etc.
-	 *
-	 *
-	 * @var string
-	 */
-	protected $_field_input_types = array();
-
-
-	/**
-	 * Current model DB table, used in all db calls
-	 *
-	 * This can/should be overwritten/set by extending the class
-	 *
-	 * @var string
-	 */
-	protected $_db_table;
-
-    /**
-     * Current url Profile data
-	 * Example: array('route'=>'page/view/index', 'vars' => array('id' => 'page_id', 'sef' => 'page_sef'), 'name' => 'page_title', 'description' => '');
      * @var string
      */
-    protected $_url = array();
-
-
-    /**
-     * Current Featurebox Profile data
-	 * Example: array('title' => 'page_title', 'text' => '');
-     * @var string
-     */
-    protected $_featurebox = array();
+    protected $_db_table;
 
     /**
      * Runtime cache of parsed from {@link _getData()} keys
@@ -564,59 +519,37 @@ class e_model extends e_object
      */
     protected $data_has_changed = false;
 
-	/**
-	 * Namespace to be used for model related system messages in {@link eMessage} handler
-	 *
-	 * @var string
-	 */
-	protected $_message_stack = 'default';
-
-	/**
-	 * Cache string to be used from _get/set/clearCacheData() methods
-	 *
-	 * @var string
-	 */
-	protected $_cache_string = null;
-
-	/**
-	 * Force Cache even if system cahche is disabled
-	 * Default is false
-	 *
-	 * @var boolean
-	 */
-	protected $_cache_force = false;
-
-
-	/**
-	 * Optional DB table - used for auto-load data from the DB
-	 * @param string $table
-	 * @return e_model
-	 */
-	public function getModelTable()
-	{
-		return $this->_db_table;
-	}
-
-	/**
-	 * Set model DB table
-	 * @param string $table
-	 * @return e_model
-	 */
-	public function setModelTable($table)
-	{
-		$this->_db_table = $table;
-		return $this;
-	}
+    /**
+     * Namespace to be used for model related system messages in {@link eMessage} handler
+     *
+     * @var string
+     */
+    protected $_message_stack = 'default';
 
 
     /**
+     * Force Cache even if system cahche is disabled
+     * Default is false
+     *
+     * @var boolean
+     */
+    protected $_cache_force = false;
+
+    /**
+     * Current url Profile data
+     * Example: array('route'=>'page/view/index', 'vars' => array('id' => 'page_id', 'sef' => 'page_sef'), 'name' => 'page_title', 'description' => '');
+     * @var array
+     */
+    protected $_url = array();
+
+    /**
      * Set model Url Profile
-     * @param string $table
-     * @return e_model
+     * @param mixed $url
+     * @return self
      */
     public function setUrl($url)
     {
-    	if(!is_array($url)) $url = array('route' => $url);
+        if(!is_array($url)) $url = array('route' => $url);
         $this->_url = $url;
         return $this;
     }
@@ -631,148 +564,70 @@ class e_model extends e_object
     }
 
     /**
-     * Set model Featurebox  Profile
-     * @param string $table
-     * @return e_model
-     */
-    public function setFeaturebox($fb)
-    {
-    //	if(!is_array($url)) $url = array('route' => $url);
-        $this->_featurebox = $fb;
-        return $this;
-    }
-
-    /**
-     * Get Featurebox profile
-     * @return array
-     */
-    public function getFeaturebox()
-    {
-        return $this->_featurebox;
-    }
-
-
-    /**
      * Generic URL assembling method
-	 * @param array $options [optional] see eRouter::assemble() for $options structure
-	 * @param boolean $extended [optional] if true, method will return an array containing url, title and description of the url
+     * @param mixed $options [optional] see eRouter::assemble() for $options structure
+     * @param boolean $extended [optional] if true, method will return an array containing url, title and description of the url
      * @return mixed URL string or extended array data
      */
     public function url($ids, $options = array(), $extended = false)
     {
-        $urldata = $this->getUrl();
-		if(empty($urldata) || !vartrue($urldata['route'])) return ($extended ? array() : null);
+        $urlData = $this->getUrl();
+        if(empty($urlData) || !vartrue($urlData['route'])) return ($extended ? array() : null);
 
-		$eurl = e107::getUrl();
+        $eurl = e107::getUrl();
 
-		if(empty($options)) $options = array();
-		elseif(!is_array($options)) parse_str($options, $options);
+        if(empty($options)) $options = array();
+        elseif(is_string($options)) parse_str($options, $options);
 
-		$vars = $this->toArray();
-		if(!isset($options['allow']) || empty($options['allow']))
-		{
-			if(vartrue($urldata['vars']) && is_array($urldata['vars']))
-			{
-				$vars = array();
-				foreach ($urldata['vars'] as $var => $field)
-				{
-					if($field === true) $field = $var;
-					$vars[$var] = $this->get($field);
-				}
-			}
-		}
-
-		$method = isset($options['sc']) ? 'sc' : 'create';
-
-		$url = e107::getUrl()->$method($urldata['route'], $vars, $options);
-
-		if(!$extended)
-		{
-			return $url;
-		}
-
-		return array(
-			'url' => $url,
-			'name' => vartrue($urldata['name']) ? $this->get($urldata['name']) : '',
-			'description' => vartrue($urldata['description']) ? $this->get($urldata['description']) : '',
-		);
-    }
-
-
-     /**
-     * Generic Featurebox assembling method
-     * @return mixed URL string or extended array data
-     */
-    public function featurebox($options = array(), $extended = false)
-    {
-
-
-    }
-
-
-
-
-
-
-
-
-
-
-
-
-
-    /**
-     * Get data fields array
-     * @return array
-     */
-    public function getDataFields()
-    {
-    	return $this->_data_fields;
-    }
-
-
-	/**
-	 * @param $key
-	 * @return bool
-	 */
-	public function getFieldInputType($key)
-    {
-        if(isset($this->_field_input_types[$key]))
+        $vars = $this->toArray();
+        if(!isset($options['allow']) || empty($options['allow']))
         {
-            return $this->_field_input_types[$key];
+            if(vartrue($urlData['vars']) && is_array($urlData['vars']))
+            {
+                $vars = array();
+                foreach ($urlData['vars'] as $var => $field)
+                {
+                    if($field === true) $field = $var;
+                    $vars[$var] = $this->get($field);
+                }
+            }
         }
 
-        return false;
+        $method = isset($options['sc']) ? 'sc' : 'create';
+
+        $url = $eurl->$method($urlData['route'], $vars, $options);
+
+        if(!$extended)
+        {
+            return $url;
+        }
+
+        return array(
+            'url' => $url,
+            'name' => vartrue($urlData['name']) ? $this->get($urlData['name']) : '',
+            'description' => vartrue($urlData['description']) ? $this->get($urlData['description']) : '',
+        );
+    }
+
+
+    /**
+     * Optional DB table - used for auto-load data from the DB
+     * @return string
+     */
+    public function getModelTable()
+    {
+        return $this->_db_table;
     }
 
     /**
-     * Set Predefined data fields in format key => type
-     * @return e_model
+     * Set model DB table
+     * @param string $table
+     * @return self
      */
-    public function setDataFields($data_fields)
+    public function setModelTable($table)
     {
-    	$this->_data_fields = $data_fields;
-		return $this;
-    }
-
-	/**
-     * Set Predefined data fields in format key => type
-     * @return e_model
-     */
-    public function setFieldInputTypes($fields)
-    {
-    	$this->_field_input_types = $fields;
-		return $this;
-    }
-
-    /**
-     * Set Predefined data field
-     * @return e_model
-     */
-    public function setDataField($field, $type)
-    {
-    	$this->_data_fields[$field] = $type;
-		return $this;
+        $this->_db_table = $table;
+        return $this;
     }
 
     /**
@@ -784,9 +639,9 @@ class e_model extends e_object
      * @param mixed $default
      * @return mixed
      */
-	public function get($key, $default = null)
+    public function get($key, $default = null)
     {
-    	return $this->_getDataSimple((string) $key, $default);
+        return $this->_getDataSimple((string) $key, $default);
     }
 
     /**
@@ -799,9 +654,9 @@ class e_model extends e_object
      * @param integer $index
      * @return mixed
      */
-	public function getData($key = '', $default = null, $index = null)
+    public function getData($key = '', $default = null, $index = null)
     {
-    	return $this->_getData($key, $default, $index);
+        return $this->_getData($key, $default, $index);
     }
 
     /**
@@ -814,11 +669,11 @@ class e_model extends e_object
      * @param string $key
      * @param mixed $value
      * @param boolean $strict update only
-     * @return e_model
+     * @return self
      */
-	public function set($key, $value = null, $strict = false)
+    public function set($key, $value = null, $strict = false)
     {
-    	return $this->_setDataSimple($key, $value, $strict);
+        return $this->_setDataSimple($key, $value, $strict);
     }
 
     /**
@@ -829,11 +684,11 @@ class e_model extends e_object
      * @param string|array $key
      * @param mixed $value
      * @param boolean $strict update only
-     * @return e_model
+     * @return self
      */
-	public function setData($key, $value = null, $strict = false)
+    public function setData($key, $value = null, $strict = false)
     {
-    	return $this->_setData($key, $value, $strict);
+        return $this->_setData($key, $value, $strict);
     }
 
     /**
@@ -846,26 +701,26 @@ class e_model extends e_object
      * @param string|array $key
      * @param mixed $value
      * @param boolean $override override existing data
-     * @return e_model
+     * @return self
      */
     public function addData($key, $value = null, $override = true)
     {
-    	return $this->_addData($key, $value, $override);
+        return $this->_addData($key, $value, $override);
     }
 
-	/**
+    /**
      * Unset single field from the object.
      * Public proxy of {@link _unsetDataSimple()}
      *
      * @param string $key
-     * @return e_model
+     * @return self
      */
     public function remove($key)
     {
-    	return $this->_unsetDataSimple($key);
+        return $this->_unsetDataSimple($key);
     }
 
-	/**
+    /**
      * Unset data from the object.
      * $key can be a string only. Array will be ignored.
      * '/' inside the key will be treated as array path
@@ -874,11 +729,11 @@ class e_model extends e_object
      * Public proxy of {@link _unsetData()}
      *
      * @param string|null $key
-     * @return e_model
+     * @return self
      */
     public function removeData($key = null)
     {
-    	return $this->_unsetData($key);
+        return $this->_unsetData($key);
     }
 
     /**
@@ -887,7 +742,7 @@ class e_model extends e_object
      */
     public function has($key)
     {
-    	return $this->_hasData($key);
+        return $this->_hasData($key);
     }
 
     /**
@@ -896,7 +751,7 @@ class e_model extends e_object
      */
     public function hasData($key = '')
     {
-    	return $this->_hasData($key);
+        return $this->_hasData($key);
     }
 
     /**
@@ -905,7 +760,7 @@ class e_model extends e_object
      */
     public function isData($key)
     {
-    	return $this->_isData($key);
+        return $this->_isData($key);
     }
 
     /**
@@ -914,11 +769,11 @@ class e_model extends e_object
      */
     public function isModified($new_state = null)
     {
-    	if(is_bool($new_state))
-    	{
-    		$this->data_has_changed = $new_state;
-    	}
-    	return $this->data_has_changed;
+        if(is_bool($new_state))
+        {
+            $this->data_has_changed = $new_state;
+        }
+        return $this->data_has_changed;
     }
 
     /**
@@ -941,7 +796,7 @@ class e_model extends e_object
      * @param string $key
      * @param mixed $default
      * @param integer $index
-     * @param boolean $posted data source
+     * @param string $data_src
      * @return mixed
      */
     protected function _getData($key = '', $default = null, $index = null, $data_src = '_data')
@@ -951,32 +806,26 @@ class e_model extends e_object
             return $this->$data_src;
         }
 
-        $simple = false;
         if(strpos($key, '//') === 0)
         {
-        	$key = substr($key, 2);
-        	$simple = true;
+            $key = substr($key, 2);
+            $simple = true;
         }
-        /*elseif($key[0] == '/')
-        {
-        	// just use it!
-        	$simple = true;
-        }*/
         else
         {
-        	$simple = strpos($key, '/') === false;
+            $simple = strpos($key, '/') === false;
         }
 
         // Fix - check if _data[path/to/value] really doesn't exist
         if (!$simple)
         {
-        	//$key = trim($key, '/');
-        	if(isset($this->_parsed_keys[$data_src.'/'.$key]))
-        	{
-        		return $this->_parsed_keys[$data_src.'/'.$key];
-        	}
-        	// new feature (double slash) - when searched key string is key//some/key/with/slashes//more
-        	// -> search for 'key' => array('some/key/with/slashes', array('more' => value));
+            //$key = trim($key, '/');
+            if(isset($this->_parsed_keys[$data_src.'/'.$key]))
+            {
+                return $this->_parsed_keys[$data_src.'/'.$key];
+            }
+            // new feature (double slash) - when searched key string is key//some/key/with/slashes//more
+            // -> search for 'key' => array('some/key/with/slashes', array('more' => value));
             $keyArr = explode(strpos($key, '//') ? '//' : '/', $key);
             $data = $this->$data_src;
             foreach ($keyArr as $i => $k)
@@ -1035,7 +884,7 @@ class e_model extends e_object
      *
      * @param string $key
      * @param mixed $default
-     * @param string $posted data source
+     * @param string $data_src
      * @return mixed
      */
     protected function _getDataSimple($key, $default = null, $data_src = '_data')
@@ -1066,103 +915,99 @@ class e_model extends e_object
      * @param mixed $value
      * @param boolean $strict
      * @param string $data_src
-     * @return e_model
+     * @return self
      */
     protected function _setData($key, $value = null, $strict = false, $data_src = '_data')
     {
         if(is_array($key))
         {
             if($strict)
-	    	{
-				foreach($key as $k => $v)
-		        {
-		        	$this->_setData($k, $v, true, $data_src);
-		        }
-		        return $this;
-	    	}
+            {
+                foreach($key as $k => $v)
+                {
+                    $this->_setData($k, $v, true, $data_src);
+                }
+                return $this;
+            }
 
             $this->$data_src = $key;
             return $this;
         }
 
         //multidimensional array support - strict _setData for values of type array
-    	if($strict && !empty($value) && is_array($value))
-       	{
-			foreach($value as $k => $v)
-			{
-				// new - $k couldn't be a path - e.g. 'key' 'value/value1'
-				// will result in 'key' => 'value/value1' and NOT 'key' => array('value' => value1)
-			    $this->_setData($key.'//'.$k, $v, true, $data_src);
-			}
-			return $this;
-       	}
+        if($strict && !empty($value) && is_array($value))
+        {
+            foreach($value as $k => $v)
+            {
+                // new - $k couldn't be a path - e.g. 'key' 'value/value1'
+                // will result in 'key' => 'value/value1' and NOT 'key' => array('value' => value1)
+                $this->_setData($key.'//'.$k, $v, true, $data_src);
+            }
+            return $this;
+        }
 
-        $simple = false;
         if(strpos($key, '//') === 0)
         {
-        	// NEW - leading '//' means set 'some/key' without parsing it
-        	// Example: '//some/key'; NOTE: '//some/key//more/depth' is NOT parsed
-        	// if you wish to have array('some/key' => array('more/depth' => value))
-        	// right syntax is 'some/key//more/depth'
-        	$key = substr($key, 2);
-        	$simple = true;
+            // NEW - leading '//' means set 'some/key' without parsing it
+            // Example: '//some/key'; NOTE: '//some/key//more/depth' is NOT parsed
+            // if you wish to have array('some/key' => array('more/depth' => value))
+            // right syntax is 'some/key//more/depth'
+            $key = substr($key, 2);
+            $simple = true;
         }
-        /*elseif($key[0] == '/')
-        {
-        	$simple = true;
-        }*/
         else
         {
-        	$simple = strpos($key, '/') === false;
+            $simple = strpos($key, '/') === false;
         }
 
         //multidimensional array support - parse key
         if(!$simple)
         {
-        	//$key = trim($key, '/');
-        	//if strict - update only
-	        if($strict && !$this->isData($key))
-	        {
-	        	return $this;
-	        }
+            //$key = trim($key, '/');
+            //if strict - update only
+            if($strict && !$this->isData($key))
+            {
+                return $this;
+            }
 
-        	// new feature (double slash) - when parsing key: key//some/key/with/slashes//more
-        	// -> result is 'key' => array('some/key/with/slashes', array('more' => value));
-	        $keyArr = explode(strpos($key, '//') ? '//' : '/', $key);
-        	//$keyArr = explode('/', $key);
-        	$data = &$this->{$data_src};
+            // new feature (double slash) - when parsing key: key//some/key/with/slashes//more
+            // -> result is 'key' => array('some/key/with/slashes', array('more' => value));
+            $keyArr = explode(strpos($key, '//') ? '//' : '/', $key);
+            //$keyArr = explode('/', $key);
+            $data = &$this->{$data_src};
             for ($i = 0, $l = count($keyArr); $i < $l; $i++)
             {
+                /** @var string $k */
+                $k = $keyArr[$i];
+                // PHP7.1 fix. Reset to empty array() if $data[$k] is an empty string.
+                // Reason for empty string still unknown.
+                if (!isset($data[$k]) || empty($data[$k]))
+                {
+                    $data[$k] = array();
+                }
 
-	            $k = $keyArr[$i];
+                $data = &$data[$k];
+            }
 
-	            if (!isset($data[$k]) || empty($data[$k])) // PHP7.1 fix. Reset to empty array() if $data[$k] is an empty string. Reason for empty string still unknown.
-	            {
-	                $data[$k] = array();
-	            }
-
-	            $data = &$data[$k];
-	        }
-
-	        //data has changed - optimized
-	        if('_data' === $data_src && !$this->data_has_changed)
-	        {
-	        	$this->data_has_changed = (!isset($this->_data[$key]) || $this->_data[$key] != $value);
-	        }
-	        $this->_parsed_keys[$data_src.'/'.$key] = $value;
-	        $data = $value;
+            //data has changed - optimized
+            if('_data' === $data_src && !$this->data_has_changed)
+            {
+                $this->data_has_changed = (!isset($this->_data[$key]) || $this->_data[$key] != $value);
+            }
+            $this->_parsed_keys[$data_src.'/'.$key] = $value;
+            $data = $value;
         }
         else
         {
-			//if strict - update only
-	        if($strict && !isset($this->_data[$key]))
-	        {
-	        	return $this;
-	        }
-        	if('_data' === $data_src && !$this->data_has_changed)
-	        {
-	        	$this->data_has_changed = (!isset($this->_data[$key]) || $this->{$data_src}[$key] != $value);
-	        }
+            //if strict - update only
+            if($strict && !isset($this->_data[$key]))
+            {
+                return $this;
+            }
+            if('_data' === $data_src && !$this->data_has_changed)
+            {
+                $this->data_has_changed = (!isset($this->_data[$key]) || $this->{$data_src}[$key] != $value);
+            }
             $this->{$data_src}[$key] = $value;
         }
 
@@ -1177,32 +1022,32 @@ class e_model extends e_object
      * @param mixed $value
      * @param boolean $strict
      * @param string $data_src
-     * @return e_model
+     * @return self
      */
-	protected function _setDataSimple($key, $value = null, $strict = false, $data_src = '_data')
+    protected function _setDataSimple($key, $value = null, $strict = false, $data_src = '_data')
     {
-    	$key = $key.'';//smart toString
-    	if(!$strict)
-    	{
-			//data has changed
-	        if('_data' === $data_src && !$this->data_has_changed)
-	        {
-	        	$this->data_has_changed = (!isset($this->_data[$key]) || $this->_data[$key] != $value);
-	        }
-	        $this->{$data_src}[$key] = $value;
-    		return $this;
-    	}
+        $key = $key.'';//smart toString
+        if(!$strict)
+        {
+            //data has changed
+            if('_data' === $data_src && !$this->data_has_changed)
+            {
+                $this->data_has_changed = (!isset($this->_data[$key]) || $this->_data[$key] != $value);
+            }
+            $this->{$data_src}[$key] = $value;
+            return $this;
+        }
 
-    	if($this->isData($key))
-    	{
-			if('_data' === $data_src && !$this->data_has_changed)
-	        {
-	        	$this->data_has_changed = (!isset($this->_data[$key]) || $this->_data[$key] != $value);
-	        }
-	        $this->{$data_src}[$key] = $value;
-    	}
+        if($this->isData($key))
+        {
+            if('_data' === $data_src && !$this->data_has_changed)
+            {
+                $this->data_has_changed = (!isset($this->_data[$key]) || $this->_data[$key] != $value);
+            }
+            $this->{$data_src}[$key] = $value;
+        }
 
-    	return $this;
+        return $this;
     }
 
     /**
@@ -1215,34 +1060,34 @@ class e_model extends e_object
      * @param mixed $value
      * @param boolean $override allow override of existing data
      * @param string $data_src data source
-     * @return e_model
+     * @return self
      */
     protected function _addData($key, $value = null, $override = true, $data_src = '_data')
     {
-    	if(is_array($key))
-    	{
-			foreach($key as $k => $v)
-			{
-			    $this->_addData($k, $v, $override, $data_src);
-			}
-			return $this;
-    	}
+        if(is_array($key))
+        {
+            foreach($key as $k => $v)
+            {
+                $this->_addData($k, $v, $override, $data_src);
+            }
+            return $this;
+        }
 
-		if($override || !$this->_isData($key, $data_src))
-       	{
-       		if(is_array($value))
-       		{
-				if(is_array($key))
-				{
-					foreach($key as $k => $v)
-					{
-					    $this->_addData($key.'/'.$k, $v, $override, $data_src);
-					}
-				}
-				return $this;
-       		}
-       		$this->_setData($key, $value, false, $data_src);
-       	}
+        if($override || !$this->_isData($key, $data_src))
+        {
+            if(is_array($value))
+            {
+                if(is_array($key))
+                {
+                    foreach($key as $k => $v)
+                    {
+                        $this->_addData($key.'/'.$k, $v, $override, $data_src);
+                    }
+                }
+                return $this;
+            }
+            $this->_setData($key, $value, false, $data_src);
+        }
         return $this;
     }
 
@@ -1254,71 +1099,72 @@ class e_model extends e_object
      *
      * @param string|null $key
      * @param string $data_src data source
-     * @return e_model
+     * @return self
      */
     protected function _unsetData($key = null, $data_src = '_data')
     {
         if (null === $key)
         {
-        	if('_data' === $data_src && !empty($this->_data))
-        	{
-        		$this->data_has_changed = true;
-        	}
-        	$this->{$data_src} = array();
+            if('_data' === $data_src && !empty($this->_data))
+            {
+                $this->data_has_changed = true;
+            }
+            $this->{$data_src} = array();
             return $this;
         }
 
         $key = trim($key, '/');
         if(strpos($key,'/'))
         {
-        	$keyArr = explode('/', $key);
-        	$data = &$this->{$data_src};
+            $keyArr = explode('/', $key);
+            $data = &$this->{$data_src};
 
-        	$unskey = array_pop($keyArr);
+            $unskey = array_pop($keyArr);
             for ($i = 0, $l = count($keyArr); $i < $l; $i++)
             {
-	            $k = $keyArr[$i];
-	            if (!isset($data[$k]))
-	            {
-	                return $this; //not found
-	            }
-	            $data = &$data[$k];
-	        }
-	        if(is_array($data))
-	        {
-				if('_data' === $data_src && isset($data[$unskey]))
-	        	{
-	        		$this->data_has_changed = true;
-	        	}
-	        	unset($data[$unskey], $this->_parsed_keys[$data_src.'/'.$key]);
-	        }
+                /** @var string $k */
+                $k = $keyArr[$i];
+                if (!isset($data[$k]))
+                {
+                    return $this; //not found
+                }
+                $data = &$data[$k];
+            }
+            if(is_array($data))
+            {
+                if('_data' === $data_src && isset($data[$unskey]))
+                {
+                    $this->data_has_changed = true;
+                }
+                unset($data[$unskey], $this->_parsed_keys[$data_src.'/'.$key]);
+            }
         }
         else
         {
-       		if('_data' === $data_src && isset($this->{$data_src}[$key]))
-        	{
-        		$this->data_has_changed = true;
-        	}
+            if('_data' === $data_src && isset($this->{$data_src}[$key]))
+            {
+                $this->data_has_changed = true;
+            }
             unset($this->{$data_src}[$key]);
         }
         return $this;
     }
 
-	/**
+    /**
      * Unset single field from the object from the given source. Key is not parsed
      *
      * @param string $key
      * @param string $data_src data source
-     * @return e_model
+     * @return self
      */
     protected function _unsetDataSimple($key, $data_src = '_data')
     {
-		if('_data' === $data_src && isset($this->{$data_src}[$key]))
-       	{
-       		$this->data_has_changed = true;
-       	}
-    	unset($this->{$data_src}[$key]);
-    	return $this;
+        if('_data' === $data_src && isset($this->{$data_src}[$key]))
+        {
+            $this->data_has_changed = true;
+        }
+        unset($this->{$data_src}[$key]);
+        return $this;
     }
 
     /**
@@ -1351,83 +1197,83 @@ class e_model extends e_object
         return (null !== $this->_getData($key, null, null, $data_src));
     }
 
-	/**
-	 * Add system message of type Information
-	 *
-	 * @param string $message
-	 * @param boolean $session [optional]
-	 * @return e_model
-	 */
-	public function addMessageInfo($message, $session = false)
-	{
-		e107::getMessage()->addStack($message, $this->_message_stack, E_MESSAGE_INFO, $session);
-		return $this;
-	}
+    /**
+     * Add system message of type Information
+     *
+     * @param string $message
+     * @param boolean $session [optional]
+     * @return self
+     */
+    public function addMessageInfo($message, $session = false)
+    {
+        e107::getMessage()->addStack($message, $this->_message_stack, E_MESSAGE_INFO, $session);
+        return $this;
+    }
 
-	/**
-	 * Add system message of type Success
-	 *
-	 * @param string $message
-	 * @param boolean $session [optional]
-	 * @return e_model
-	 */
-	public function addMessageSuccess($message, $session = false)
-	{
-		e107::getMessage()->addStack($message, $this->_message_stack, E_MESSAGE_SUCCESS, $session);
-		return $this;
-	}
+    /**
+     * Add system message of type Success
+     *
+     * @param string $message
+     * @param boolean $session [optional]
+     * @return self
+     */
+    public function addMessageSuccess($message, $session = false)
+    {
+        e107::getMessage()->addStack($message, $this->_message_stack, E_MESSAGE_SUCCESS, $session);
+        return $this;
+    }
 
-	/**
-	 * Add system message of type Warning
-	 *
-	 * @param string $message
-	 * @param boolean $session [optional]
-	 * @return e_model
-	 */
-	public function addMessageWarning($message, $session = false)
-	{
-		e107::getMessage()->addStack($message, $this->_message_stack, E_MESSAGE_WARNING, $session);
-		return $this;
-	}
+    /**
+     * Add system message of type Warning
+     *
+     * @param string $message
+     * @param boolean $session [optional]
+     * @return self
+     */
+    public function addMessageWarning($message, $session = false)
+    {
+        e107::getMessage()->addStack($message, $this->_message_stack, E_MESSAGE_WARNING, $session);
+        return $this;
+    }
 
-	/**
-	 * Add system message of type Error
-	 *
-	 * @param string $message
-	 * @param boolean $session [optional]
-	 * @param array $logData [optional] array('TABLE'=>'', 'ERROR'=>'') etc.
-	 * @return e_model
-	 */
-	public function addMessageError($message, $session = false, $logData = array())
-	{
-		e107::getMessage()->addStack($message, $this->_message_stack, E_MESSAGE_ERROR, $session);
+    /**
+     * Add system message of type Error
+     *
+     * @param string $message
+     * @param boolean $session [optional]
+     * @param array $logData [optional] array('TABLE'=>'', 'ERROR'=>'') etc.
+     * @return self
+     */
+    public function addMessageError($message, $session = false, $logData = array())
+    {
+        e107::getMessage()->addStack($message, $this->_message_stack, E_MESSAGE_ERROR, $session);
 
-		if(!empty($logData))
-		{
-			e107::getAdminLog()->addArray($logData);
-		}
-		else
-		{
-			e107::getAdminLog()->addError($message,false);
-		}
+        if(!empty($logData))
+        {
+            e107::getAdminLog()->addArray($logData);
+        }
+        else
+        {
+            e107::getAdminLog()->addError($message,false);
+        }
 
-		e107::getAdminLog()->save('ADMINUI_04', E_LOG_WARNING);
+        e107::getAdminLog()->save('ADMINUI_04', E_LOG_WARNING);
 
-		return $this;
-	}
+        return $this;
+    }
 
-	/**
-	 * Add system message of type Information
-	 *
-	 * @param string $message
-	 * @param boolean $session [optional]
-	 * @return e_model
-	 */
-	public function addMessageDebug($message, $session = false)
-	{
-		e107::getMessage()->addStack($message, $this->_message_stack, E_MESSAGE_DEBUG, $session);
-		return $this;
-	}
+    /**
+     * Add system message of type Information
+     *
+     * @param string $message
+     * @param boolean $session [optional]
+     * @return self
+     */
+    public function addMessageDebug($message, $session = false)
+    {
+        e107::getMessage()->addStack($message, $this->_message_stack, E_MESSAGE_DEBUG, $session);
+        return $this;
+    }
 
     /**
      * Render System messages (if any)
@@ -1438,19 +1284,19 @@ class e_model extends e_object
      */
     public function renderMessages($session = false, $reset = true)
     {
-    	return e107::getMessage()->render($this->_message_stack, $session, $reset);
+        return e107::getMessage()->render($this->_message_stack, $session, $reset);
     }
 
     /**
      * Move model System messages (if any) to the default eMessage stack
      *
      * @param boolean $session store messages to session
-     * @return e_model
+     * @return self
      */
     public function setMessages($session = false)
     {
-    	e107::getMessage()->moveStack($this->_message_stack, 'default', false, $session);
-		return $this;
+        e107::getMessage()->moveStack($this->_message_stack, 'default', false, $session);
+        return $this;
     }
 
     /**
@@ -1458,32 +1304,385 @@ class e_model extends e_object
      *
      * @param boolean|string $type E_MESSAGE_INFO | E_MESSAGE_SUCCESS | E_MESSAGE_WARNING | E_MESSAGE_WARNING | E_MESSAGE_DEBUG | false (all)
      * @param boolean $session reset also session messages
-     * @return e_model
+     * @return self
      */
     public function resetMessages($type = false, $session = false)
     {
         e107::getMessage()->reset($type, $this->_message_stack, $session);
-		return $this;
+        return $this;
     }
 
-	/**
-	 * Set model message stack
-	 * @param string $stack_name
-	 * @return e_model
-	 */
+    /**
+     * Set model message stack
+     * @param string $stack_name
+     * @return self
+     */
     public function setMessageStackName($stack_name)
     {
-    	$this->_message_stack = $stack_name;
-		return $this;
+        $this->_message_stack = $stack_name;
+        return $this;
     }
 
-	/**
-	 * Get model message stack name
-	 * @return string
-	 */
+    /**
+     * Get model message stack name
+     * @return string
+     */
     public function getMessageStackName()
     {
-		return $this->_message_stack;
+        return $this->_message_stack;
+    }
+
+    /**
+     * Set parameter array
+     * Core implemented:
+     * - db_query: string db query to be passed to load() ($sql->gen())
+     * - db_query
+     * - db_fields
+     * - db_where
+     * - db_debug
+     * - model_class: e_tree_model class/subclasses - string class name for creating nodes inside default load() method
+     * - clearModelCache: e_tree_model class/subclasses - clear cache per node after successful DB operation
+     * - noCacheStringModify: e_tree_model class/subclasses - do not add additional md5 sum to tree cache string
+     * @param array $params
+     * @return self
+     */
+    public function setParams(array $params)
+    {
+        parent::setParams($params);
+        return $this;
+    }
+
+    public function destroy()
+    {
+        $this->_data = array();
+        $this->_params = array();
+        $this->_parsed_keys = array();
+        $this->_db_table = $this->_field_id = '';
+        $this->data_has_changed = false;
+    }
+
+    /**
+     * Disable Magic setter
+     * @inheritdoc
+     */
+    public function __set($key, $value)
+    {
+    }
+
+    /**
+     * Disable Magic getter
+     * @inheritdoc
+     */
+    public function __get($key)
+    {
+    }
+
+    /**
+     * Disable
+     * @inheritdoc
+     */
+    public function __isset($key)
+    {
+    }
+
+    /**
+     * Disable
+     * @inheritdoc
+     */
+    public function __unset($key)
+    {
+    }
+}
+
+/**
+ * Base e107 Model class
+ *
+ * @package e107
+ * @category e107_handlers
+ * @version 1.0
+ * @author SecretR
+ * @copyright Copyright (C) 2010, e107 Inc.
+ */
+class e_model extends e_model_abstract
+{
+    /**
+     * Data structure (types) array, required for {@link e_front_model::sanitize()} method,
+     * it also serves as a map (find data) for building DB queries,
+     * copy/sanitize posted data to object data, etc.
+     *
+     * This can/should be overwritten by extending the class
+     *
+     * @var array
+     */
+    protected $_data_fields = array();
+
+    /**
+     * Current model field types eg. text, bbarea, dropdown etc.
+     *
+     *
+     * @var string
+     */
+    protected $_field_input_types = array();
+
+    /**
+     * FIXME remove it as it doesn't belong to any abstraction
+     * Current Featurebox Profile data
+     * Example: array('title' => 'page_title', 'text' => '');
+     * @var array
+     */
+    protected $_featurebox = array();
+
+    /**
+     * Cache string to be used from _get/set/clearCacheData() methods
+     *
+     * @var string
+     */
+    protected $_cache_string = null;
+
+    /**
+     * Get data fields array
+     * @return array
+     */
+    public function getDataFields()
+    {
+        return $this->_data_fields;
+    }
+
+
+    /**
+     * @param $key
+     * @return bool
+     */
+    public function getFieldInputType($key)
+    {
+        if(isset($this->_field_input_types[$key]))
+        {
+            return $this->_field_input_types[$key];
+        }
+
+        return false;
+    }
+
+    /**
+     * Set Predefined data fields in format key => type
+     * @param array $data_fields
+     * @return self
+     */
+    public function setDataFields($data_fields)
+    {
+        $this->_data_fields = $data_fields;
+        return $this;
+    }
+
+    /**
+     * Set Predefined data fields in format key => type
+     * @param array $fields
+     * @return self
+     */
+    public function setFieldInputTypes($fields)
+    {
+        $this->_field_input_types = $fields;
+        return $this;
+    }
+
+    /**
+     * Set Predefined data field
+     * @param string $field
+     * @param string $type
+     * @return self
+     */
+    public function setDataField($field, $type)
+    {
+        $this->_data_fields[$field] = $type;
+        return $this;
+    }
+
+    /**
+     * Generic load data from DB
+     * @param mixed $id
+     * @param boolean $force
+     * @return self
+     */
+    public function load($id = null, $force = false)
+    {
+        if(!$force && $this->getId())
+        {
+            return $this;
+        }
+
+        if($force)
+        {
+            $this->setData(array());
+            $this->_clearCacheData();
+        }
+        if($id) $id = e107::getParser()->toDB($id);
+        if(!$id && !$this->getParam('db_query'))
+        {
+            return $this;
+        }
+
+        $cached = $this->_getCacheData();
+        if($cached !== false)
+        {
+            $this->setData($cached);
+            return $this;
+        }
+
+        $sql = e107::getDb();
+        $qry = str_replace('{ID}', $id, $this->getParam('db_query'));
+        if($qry)
+        {
+            $res = $sql->gen($qry, $this->getParam('db_debug') ? true : false);
+        }
+        else
+        {
+            if(!is_numeric($id)) $id = "'{$id}'";
+
+            $res = $sql->select(
+                $this->getModelTable(),
+                $this->getParam('db_fields', '*'),
+                $this->getFieldIdName().'='.$id.' '.trim($this->getParam('db_where', '')),
+                'default',
+                ($this->getParam('db_debug') ? true : false)
+            );
+        }
+
+
+        if($res)
+        {
+            $this->setData($sql->fetch());
+        }
+
+        if($sql->getLastErrorNumber())
+        {
+            $this->addMessageDebug('SQL error #'.$sql->getLastErrorNumber().': '.$sql->getLastErrorText());
+            $this->addMessageDebug($sql->getLastQuery());
+        }
+        else
+        {
+
+            $this->_setCacheData();
+        }
+
+        return $this;
+    }
+
+    /**
+     * Set model cache string
+     * @param string $str
+     * @return self
+     */
+    public function setCacheString($str)
+    {
+        $this->_cache_string = $str;
+        return $this;
+    }
+
+    /**
+     * Retrieve system cache (if any)
+     * @return array|false
+     */
+    protected function _getCacheData()
+    {
+        if(!$this->isCacheEnabled())
+        {
+            return false;
+        }
+
+        $cached = e107::getCache()->retrieve_sys($this->getCacheString(true), false, $this->_cache_force);
+        if(false !== $cached)
+        {
+            return e107::unserialize($cached);
+        }
+
+        return false;
+    }
+
+    /**
+     * Set system cache if enabled for the model
+     * @return self
+     */
+    protected function _setCacheData()
+    {
+        if(!$this->isCacheEnabled())
+        {
+            return $this;
+        }
+        e107::getCache()->set_sys($this->getCacheString(true), $this->toString(false), $this->_cache_force, false);
+        return $this;
+    }
+
+    /**
+     * Clrear system cache if enabled for the model
+     * @return self
+     */
+    protected function _clearCacheData()
+    {
+        if(!$this->isCacheEnabled(false))
+        {
+            return $this;
+        }
+        e107::getCache()->clear_sys($this->getCacheString(true), false);
+        return $this;
+    }
+
+    /**
+     * Clrear system cache (public proxy) if enabled for the model
+     * @return self
+     */
+    public function clearCache()
+    {
+        return $this->_clearCacheData();
+    }
+
+    /**
+     * Check if cache is enabled for the current model
+     * @param boolean $checkId check if there is model ID
+     * @return boolean
+     */
+    public function isCacheEnabled($checkId = true)
+    {
+        return (null !== $this->getCacheString() && (!$checkId || $this->getId()));
+    }
+
+    /**
+     * Get model cache string
+     * @param boolean $replace try to add current model ID (replace destination is {ID})
+     * @return string
+     */
+    public function getCacheString($replace = false)
+    {
+        return ($replace ? str_replace('{ID}', $this->getId(), $this->_cache_string) : $this->_cache_string);
+    }
+
+    /**
+     * Set model Featurebox  Profile
+     * @param array $fb
+     * @return self
+     */
+    public function setFeaturebox($fb)
+    {
+        //	if(!is_array($url)) $url = array('route' => $url);
+        $this->_featurebox = $fb;
+        return $this;
+    }
+
+    /**
+     * Get Featurebox profile
+     * @return array
+     */
+    public function getFeaturebox()
+    {
+        return $this->_featurebox;
+    }
+
+    /**
+     * Generic Featurebox assembling method
+     * @param array options
+     * @param bool $extended
+     */
+    public function featurebox($options = array(), $extended = false)
+    {
     }
 
     /**
@@ -1504,169 +1703,9 @@ class e_model extends e_object
     }
 
     /**
-     * Generic load data from DB
-	 * @param mixed $id
-     * @param boolean $force
-     * @return e_model
-     */
-	public function load($id = null, $force = false)
-	{
-
-
-		if(!$force && $this->getId())
-		{
-			return $this;
-		}
-
-		if($force)
-		{
-			$this->setData(array())
-				->_clearCacheData();
-		}
-		if($id) $id = e107::getParser()->toDB($id);
-		if(!$id && !$this->getParam('db_query'))
-		{
-			return $this;
-		}
-
-		$cached = $this->_getCacheData();
-		if($cached !== false)
-		{
-			$this->setData($cached);
-			return $this;
-		}
-
-		$sql = e107::getDb();
-		$qry = str_replace('{ID}', $id, $this->getParam('db_query'));
-		if($qry)
-		{
-			$res = $sql->gen($qry, $this->getParam('db_debug') ? true : false);
-		}
-		else
-		{
-			if(!is_numeric($id)) $id = "'{$id}'";
-
-			$res = $sql->select(
-				$this->getModelTable(),
-				$this->getParam('db_fields', '*'),
-				$this->getFieldIdName().'='.$id.' '.trim($this->getParam('db_where', '')),
-				'default',
-				($this->getParam('db_debug') ? true : false)
-			);
-		}
-
-
-		if($res)
-		{
-			$this->setData($sql->fetch());
-		}
-
-		if($sql->getLastErrorNumber())
-		{
-			$this->addMessageDebug('SQL error #'.$sql->getLastErrorNumber().': '.$sql->getLastErrorText());
-			$this->addMessageDebug($sql->getLastQuery());
-		}
-		else
-		{
-
-			$this->_setCacheData();
-		}
-
-		return $this;
-	}
-
-	/**
-	 * Retrieve system cache (if any)
-	 * @return array|false
-	 */
-	protected function _getCacheData()
-	{
-		if(!$this->isCacheEnabled())
-		{
-			return false;
-		}
-
-		$cached = e107::getCache()->retrieve_sys($this->getCacheString(true), false, $this->_cache_force);
-		if(false !== $cached)
-		{
-			return e107::unserialize($cached);
-		}
-
-		return false;
-	}
-
-	/**
-	 * Set system cache if enabled for the model
-	 * @return e_model
-	 */
-	protected function _setCacheData()
-	{
-		if(!$this->isCacheEnabled())
-		{
-			return $this;
-		}
-		e107::getCache()->set_sys($this->getCacheString(true), $this->toString(false), $this->_cache_force, false);
-		return $this;
-	}
-
-	/**
-	 * Clrear system cache if enabled for the model
-	 * @return e_model
-	 */
-	protected function _clearCacheData()
-	{
-		if(!$this->isCacheEnabled(false))
-		{
-			return $this;
-		}
-		e107::getCache()->clear_sys($this->getCacheString(true), false);
-		return $this;
-	}
-
-	/**
-	 * Clrear system cache (public proxy) if enabled for the model
-	 * @return e_model
-	 */
-	public function clearCache()
-	{
-		return $this->_clearCacheData();
-	}
-
-	/**
-	 * Check if cache is enabled for the current model
-	 * @param boolean $checkId check if there is model ID
-	 * @return boolean
-	 */
-	public function isCacheEnabled($checkId = true)
-	{
-		return (null !== $this->getCacheString() && (!$checkId || $this->getId()));
-	}
-
-	/**
-	 * Get model cache string
-	 * @param boolean $replace try to add current model ID (replace destination is {ID})
-	 * @return string
-	 */
-	public function getCacheString($replace = false)
-	{
-		return ($replace ? str_replace('{ID}', $this->getId(), $this->_cache_string) : $this->_cache_string);
-	}
-
-	/**
-	 * Set model cache string
-	 * @param string $str
-	 * @return e_model
-	 */
-	public function setCacheString($str)
-	{
-		$this->_cache_string = $str;
-		return $this;
-	}
-
-    /**
      * Save data to DB
      * Awaiting for child class implementation
-     * @see e_model_admin
+     * @see self
      */
     public function save()
     {
@@ -1675,6 +1714,9 @@ class e_model extends e_object
     /**
      * Delete DB record
      * Awaiting for child class implementation
+     * @param array $ids
+     * @param bool $destroy
+     * @param bool $session_messages
      * @see e_model_admin
      */
     public function delete($ids, $destroy = true, $session_messages = false)
@@ -1702,6 +1744,8 @@ class e_model extends e_object
     /**
      * Update DB data
      * Awaiting for child class implementation
+     * @param bool $force
+     * @param bool $session_messages
      * @see e_model_admin
      */
     protected function dbUpdate($force = false, $session_messages = false)
@@ -1726,147 +1770,71 @@ class e_model extends e_object
     {
     }
 
-	/**
-	 * Set parameter array
-	 * Core implemented:
-	 * - db_query: string db query to be passed to load() ($sql->gen())
-	 * - db_query
-	 * - db_fields
-	 * - db_where
-	 * - db_debug
-	 * - model_class: e_tree_model class/subclasses - string class name for creating nodes inside default load() method
-	 * - clearModelCache: e_tree_model class/subclasses - clear cache per node after successful DB operation
-	 * - noCacheStringModify: e_tree_model class/subclasses - do not add additional md5 sum to tree cache string
-	 * @param array $params
-	 * @return e_model
-	 */
-	public function setParams(array $params)
-	{
-		parent::setParams($params);
-		return $this;
-	}
+
+    /**
+     * Export a Model configuration
+     * @return string
+     */
+    public function toXML()
+    {
+        $ret = "<?xml version=\"1.0\" encoding=\"utf-8\" ?>\n";
+        $ret .= "<e107Export type=\"model\" version=\"1.0\" timestamp=\"".time()."\" >\n";
+
+        $ret .= "\t<data>\n";
+        // TODO - handle multi dimensional arrays (already possible - field1/field2?), method toXMLValue($value, $type)
+        foreach ($this->getDataFields() as $field => $type)
+        {
+            $ret .= "\t\t<field name=\"{$field}\" type=\"{$type}\">";
+            $ret .= $type == 'str' || $type == 'string' ? "<![CDATA[".$this->getData($field)."]]>" : $this->getData($field);
+            $ret .= "</field>\n";
+        }
+        $ret .= "\t</data>\n";
+
+        $ret .= "</e107Export>";
+        return $ret;
+    }
 
 
+    /**
+     * Render model data, all 'sc_*' methods will be recongnized
+     * as shortcodes.
+     *
+     * @param string $template
+     * @param boolean $parsesc parse external shortcodes, default is true
+     * @param e_vars $eVars simple parser data
+     * @return string parsed template
+     */
+    public function toHTML($template, $parsesc = true, $eVars = null)
+    {
+        return e107::getParser()->parseTemplate($template, $parsesc, $this, $eVars);
+    }
 
-	/**
-	 * Render model data, all 'sc_*' methods will be recongnized
-	 * as shortcodes.
-	 *
-	 * @param string $template
-	 * @param boolean $parsesc parse external shortcodes, default is true
-	 * @param e_vars $eVars simple parser data
-	 * @return string parsed template
-	 */
-	public function toHTML($template, $parsesc = true, $eVars = null)
-	{
-		return e107::getParser()->parseTemplate($template, $parsesc, $this, $eVars);
-	}
+    /**
+     * Convert object data to a string
+     *
+     * @param boolean $AddSlashes
+     * @param string $key optional, if set method will return corresponding value as a string
+     * @return string
+     */
+    public function toString($AddSlashes = true, $key = null)
+    {
+        if (null !== $key)
+        {
+            $value = $this->getData($key);
+            if(is_array($value))
+            {
+                return e107::getArrayStorage()->WriteArray($value, $AddSlashes);
+            }
+            return (string) $value;
+        }
+        return (string) e107::getArrayStorage()->WriteArray($this->toArray(), $AddSlashes);
+    }
 
-	/**
-	 * Export a Model configuration
-	 * @return string
-	 */
-	public function toXML()
-	{
-		$ret = "<?xml version=\"1.0\" encoding=\"utf-8\" ?>\n";
-		$ret .= "<e107Export type=\"model\" version=\"1.0\" timestamp=\"".time()."\" >\n";
-
-		$ret .= "\t<data>\n";
-		// TODO - handle multi dimensional arrays (already possible - field1/field2?), method toXMLValue($value, $type)
-		foreach ($this->getDataFields() as $field => $type)
-		{
-			$ret .= "\t\t<field name=\"{$field}\" type=\"{$type}\">";
-			$ret .= $type == 'str' || $type == 'string' ? "<![CDATA[".$this->getData($field)."]]>" : $this->getData($field);
-			$ret .= "</field>\n";
-		}
-		$ret .= "\t</data>\n";
-
-		$ret .= "</e107Export>";
-		return $ret;
-	}
-
-	/**
-	 * Try to convert string to a number
-	 * Shoud fix locale related troubles
-	 *
-	 * @param string $value
-	 * @return integer|float
-	 */
-	// moved to e_parse
-	// public function toNumber($value)
-	// {
-	// 	$larr = localeconv();
-	// 	$search = array(
-	// 		$larr['decimal_point'],
-	// 		$larr['mon_decimal_point'],
-	// 		$larr['thousands_sep'],
-	// 		$larr['mon_thousands_sep'],
-	// 		$larr['currency_symbol'],
-	// 		$larr['int_curr_symbol']
-	// 	);
-	// 	$replace = array('.', '.', '', '', '', '');
-
-	// 	return str_replace($search, $replace, $value);
-	// }
-
-	/**
-	 * Convert object data to a string
-	 *
-	 * @param boolean $AddSlashes
-	 * @param string $key optional, if set method will return corresponding value as a string
-	 * @return string
-	 */
-	public function toString($AddSlashes = true, $key = null)
-	{
-		if (null !== $key)
-		{
-			$value = $this->getData($key);
-			if(is_array($value))
-			{
-				return e107::getArrayStorage()->WriteArray($value, $AddSlashes);
-			}
-			return (string) $value;
-		}
-		return (string) e107::getArrayStorage()->WriteArray($this->toArray(), $AddSlashes);
-	}
-
-	public function destroy()
-	{
-		$this->_data = array();
-		$this->_params = array();
-		$this->_data_fields = array();
-		$this->_parsed_keys = array();
-		$this->_db_table = $this->_field_id = '';
-		$this->data_has_changed = false;
-	}
-
-	/**
-	 * Disable Magic setter
-	 */
-	public function __set($key, $value)
-	{
-	}
-
-	/**
-	 * Disable Magic getter
-	 */
-	public function __get($key)
-	{
-	}
-
-	/**
-	 * Disable
-	 */
-	public function __isset($key)
-	{
-	}
-
-	/**
-	 * Disable
-	 */
-	public function __unset($key)
-	{
-	}
+    public function destroy()
+    {
+        parent::destroy();
+        $this->_data_fields = array();
+    }
 }
 
 /**
@@ -1963,6 +1931,7 @@ class e_front_model extends e_model
      * Set object validation rules if $_validation_rules array is empty
      *
      * @param array $vrules
+     * @param bool $force
      * @return e_front_model
      */
     public function setValidationRules(array $vrules, $force = false)
@@ -2031,35 +2000,8 @@ class e_front_model extends e_model
     }
 
     /**
-     * Auto field type definitions
-     * Disabled for now, it should auto-create _data_types
-     * @param boolean $force
-     * @return boolean
-     */
-//	public function setFieldTypeDefs($force = false)
-//	{
-//		if($force || !$this->getFieldTypes())
-//		{
-//			$ret = e107::getDb()->getFieldDefs($this->getModelTable());
-//			if($ret)
-//			{
-//				foreach ($ret as $k => $v)
-//				{
-//					if('todb' == $v)
-//					{
-//						$ret[$k] = 'string';
-//					}
-//				}
-//				$this->setFieldTypes($ret);
-//				return true;
-//			}
-//		}
-//		return false;
-//	}
-
-    /**
      * Retrieves data from the object ($_posted_data) without
-     * key parsing (performance wise, prefered when possible)
+     * key parsing (performance wise, preferred when possible)
      *
      * @see _getDataSimple()
      * @param string $key
@@ -2096,7 +2038,7 @@ class e_front_model extends e_model
      * @param string $key
      * @param string $default
      * @param integer $index
-     * @return string
+     * @return mixed
      */
     public function getIfPosted($key, $default = '', $index = null)
     {
@@ -2126,7 +2068,7 @@ class e_front_model extends e_model
      * @param string $key
      * @param mixed $value
      * @param boolean $strict update only
-     * @return e_front_model
+     * @return self
      */
     public function setPosted($key, $value, $strict = false)
     {
@@ -2142,7 +2084,7 @@ class e_front_model extends e_model
      * @param string|array $key
      * @param mixed $value
      * @param boolean $strict update only
-     * @return e_front_model
+     * @return self
      */
     public function setPostedData($key, $value = null, $strict = false)
     {
@@ -2159,7 +2101,7 @@ class e_front_model extends e_model
      * @param string|array $key
      * @param mixed $value
      * @param boolean $override override existing data
-     * @return e_front_model
+     * @return self
      */
     public function addPostedData($key, $value = null, $override = true)
     {
@@ -2171,7 +2113,7 @@ class e_front_model extends e_model
      * Public proxy of {@link _unsetDataSimple()}
      *
      * @param string $key
-     * @return e_front_model
+     * @return self
      */
     public function removePosted($key)
     {
@@ -2187,7 +2129,7 @@ class e_front_model extends e_model
      * Public proxy of {@link _unsetData()}
      *
      * @param string|null $key
-     * @return e_front_model
+     * @return self
      */
     public function removePostedData($key = null)
     {
@@ -2268,7 +2210,7 @@ class e_front_model extends e_model
      * @param boolean $strict
      * @param boolean $sanitize sanitize posted data before move it to the object data
      * @param boolean $validate perform validation check
-     * @return e_front_model
+     * @return self
      */
     public function mergePostedData($strict = true, $sanitize = true, $validate = true)
     {
@@ -2279,7 +2221,6 @@ class e_front_model extends e_model
 
 
 		$oldData = $this->getData();
-//		$this->addMessageDebug("OLDD".print_a($oldData,true));
 
 
 		$data = $this->getPostedData();
@@ -2311,8 +2252,8 @@ class e_front_model extends e_model
     		// FIX - security issue, toDb required
     		if(isset($valid_data[$field])) $dt = $tp->toDb($valid_data[$field]);
 
-    		$this->setData($field, $dt, $strict)
-    			->removePostedData($field);
+    		$this->setData($field, $dt, $strict);
+    		$this->removePostedData($field);
     	}
 
 
@@ -2443,7 +2384,7 @@ class e_front_model extends e_model
 	 * @param string $message
 	 * @param string $field_title [optional]
 	 * @param integer $error_code [optional]
-	 * @return object
+	 * @return self
 	 */
 	public function addValidationError($message, $field_title = '', $error_code = 0)
 	{
@@ -2565,10 +2506,11 @@ class e_front_model extends e_model
 
     /**
      * Generic load data from DB
+     * @param int $id
      * @param boolean $force
      * @return e_front_model
      */
-	public function load($id=null, $force = false)
+	public function load($id = null, $force = false)
 	{
 		parent::load($id, $force);
 
@@ -2578,7 +2520,7 @@ class e_front_model extends e_model
 		$this->_db_qry = $sql->getLastQuery();
 		if($this->_db_errno)
 		{
-			$this->addMessageError('SQL Select Error', $session_messages); //TODO - Lan
+			$this->addMessageError('SQL Select Error'); //TODO - Lan
 			// already done by the parent
 			//$this->addMessageDebug('SQL Error #'.$this->_db_errno.': '.$sql->getLastErrorText());
 		}
@@ -2771,6 +2713,7 @@ class e_front_model extends e_model
      *
      * @param boolean $force force query even if $data_has_changed is false
      * @param boolean $session_messages to use or not session to store system messages
+     * @return int
      */
     protected function dbUpdate($force = false, $session_messages = false)
     {
@@ -2824,6 +2767,8 @@ class e_front_model extends e_model
      * Save data to DB
      *
      * @param boolen $from_post
+     * @param boolean $force
+     * @param boolean $session_messages
      * @return boolean|integer
      */
     public function save($from_post = true, $force = false, $session_messages = false)
@@ -2850,7 +2795,9 @@ class e_front_model extends e_model
     /**
      * Update record
      *
-     * @param boolen $from_post
+     * @param boolean $from_post
+     * @param boolean $force
+     * @param boolean $session_messages
      * @return boolean|integer
      */
     public function update($from_post = true, $force = false, $session_messages = false)
@@ -2871,7 +2818,7 @@ class e_front_model extends e_model
 
     /**
      * Exactly what it says - your debug helper
-     * @param boolean $retrun
+     * @param boolean $return
      * @param boolean $undo
      * @return void
      */
@@ -2903,8 +2850,6 @@ class e_front_model extends e_model
 		print_a($ret);
 	}
 }
-
-//FIXME - move e_model_admin to e_model_admin.php
 
 /**
  * Base e107 Admin Model class
@@ -3122,22 +3067,44 @@ class e_admin_model extends e_front_model
 /**
  * Model collection handler
  */
-class e_tree_model extends e_front_model
+class e_tree_model extends e_model_abstract
 {
-	/**
-	 * Current model DB table, used in all db calls
-	 * This can/should be overwritten by extending the class
-	 *
-	 * @var string
-	 */
-	protected $_db_table;
+    /**
+     * Current model DB table, used in all db calls
+     * This can/should be overwritten by extending the class
+     *
+     * @var string
+     */
+    protected $_db_table;
 
-	/**
-	 * All records (no limit) cache
-	 *
-	 * @var string
-	 */
-	protected $_total = false;
+    /**
+     * All records (no limit) cache
+     *
+     * @var string
+     */
+    protected $_total = false;
+
+    /**
+     * @var integer Last SQL error number
+     */
+    protected $_db_errno = 0;
+
+    /**
+     * @var string Last SQL error message
+     */
+    protected $_db_errmsg = '';
+
+    /**
+     * @var string Last SQL query
+     */
+    protected $_db_qry = '';
+
+    /**
+     * Cache string to be used from _get/set/clearCacheData() methods
+     *
+     * @var string
+     */
+    protected $_cache_string = null;
 
 	/**
 	 * Constructor
@@ -3151,6 +3118,53 @@ class e_tree_model extends e_front_model
 		}
 	}
 
+    /**
+     * @return boolean
+     */
+    public function hasSqlError()
+    {
+        return !empty($this->_db_errno);
+    }
+
+    /**
+     * @return integer last mysql error number
+     */
+    public function getSqlErrorNumber()
+    {
+        return $this->_db_errno;
+    }
+
+    /**
+     * @return string last mysql error message
+     */
+    public function getSqlError()
+    {
+        return $this->_db_errmsg;
+    }
+
+    /**
+     * @return string last mysql error message
+     */
+    public function getSqlQuery()
+    {
+        return $this->_db_qry;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function hasError()
+    {
+        return $this->hasSqlError();
+    }
+
+    public function destroy()
+    {
+        parent::destroy();
+        $this->_db_errno = null;
+        $this->data_has_changed = array();
+    }
+
 	public function getTotal()
 	{
 		return $this->_total;
@@ -3160,26 +3174,6 @@ class e_tree_model extends e_front_model
 	{
 		$this->_total = $num;
 		return $this;
-	}
-
-	/**
-	 * Set table name
-	 * @param object $table
-	 * @return e_admin_tree_model
-	 */
-	public function setModelTable($table)
-	{
-		$this->_db_table = $table;
-		return $this;
-	}
-
-	/**
-	 * Get table name
-	 * @return string
-	 */
-	public function getModelTable()
-	{
-		return $this->_db_table;
 	}
 
 	/**
@@ -3193,6 +3187,8 @@ class e_tree_model extends e_front_model
 
 	/**
 	 * Set array of models
+     * @param array $tree_data
+     * @param boolean $force
 	 * @return e_tree_model
 	 */
 	function setTree($tree_data, $force = false)
@@ -3207,7 +3203,7 @@ class e_tree_model extends e_front_model
 
 	/**
 	 * Unset all current data
-	 * @return e_tree_model
+	 * @return self
 	 */
 	function unsetTree()
 	{
@@ -3215,20 +3211,65 @@ class e_tree_model extends e_front_model
 		return $this;
 	}
 
-	public function isCacheEnabled($checkId = true)
+    /**
+     * Retrieve system cache (if any)
+     * @return array|false
+     */
+    protected function _getCacheData()
+    {
+        if(!$this->isCacheEnabled())
+        {
+            return false;
+        }
+
+        $cached = e107::getCache()->retrieve_sys($this->getCacheString(), false, $this->_cache_force);
+        if(false !== $cached)
+        {
+            return e107::unserialize($cached);
+        }
+
+        return false;
+    }
+
+    /**
+     * Clrear system cache if enabled for the model
+     * @return self
+     */
+    protected function _clearCacheData()
+    {
+        if(!$this->isCacheEnabled())
+        {
+            return $this;
+        }
+        e107::getCache()->clear_sys($this->getCacheString(), false);
+        return $this;
+    }
+
+    /**
+     * Clrear system cache (public proxy) if enabled for the model
+     * @return self
+     */
+    public function clearCache()
+    {
+        return $this->_clearCacheData();
+    }
+
+	public function isCacheEnabled()
 	{
 		return (null !== $this->getCacheString());
 	}
 
-	public function getCacheString($replace = false)
+	public function getCacheString()
 	{
 		return $this->_cache_string;
 	}
 
 	public function setCacheString($str = null)
 	{
-		if(isset($str))
-			return parent::setCacheString($str);
+		if(isset($str)) {
+            $this->_cache_string = $str;
+            return $this;
+        }
 
 		if($this->isCacheEnabled() && !$this->getParam('noCacheStringModify'))
 		{
@@ -3245,7 +3286,8 @@ class e_tree_model extends e_front_model
 			return $this->setCacheString($this->getCacheString().'_'.md5($str));
 		}
 
-		return parent::setCacheString($str);
+        $this->_cache_string = $str;
+        return $this;
 	}
 
 	protected function _setCacheData()
@@ -3256,7 +3298,7 @@ class e_tree_model extends e_front_model
 		}
 
 		e107::getCache()->set_sys(
-			$this->getCacheString(true),
+			$this->getCacheString(),
 			$this->toString(false, null, $this->getParam('nocount') ? false : true),
 			$this->_cache_force,
 			false
@@ -3285,7 +3327,7 @@ class e_tree_model extends e_front_model
 	/**
 	 * Additional on load logic to be set from subclasses
 	 *
-	 * @param e_model $node
+	 * @param e_model_abstract $node
 	 * @return e_tree_model
 	 */
 	protected function _onLoad($node)
@@ -3295,8 +3337,8 @@ class e_tree_model extends e_front_model
 
 	/**
 	 * Default load method
-	 *
-	 * @return e_tree_model
+	 * @param boolean $force
+	 * @return self
 	 */
 	public function load($force = false)
 	{
@@ -3344,6 +3386,7 @@ class e_tree_model extends e_front_model
 			{
 				foreach($rows as $tmp)
 				{
+				    /** @var e_model_abstract $tmp */
 					$tmp = new $class_name($tmp);
 					if($this->getParam('model_message_stack'))
 					{
@@ -3764,7 +3807,7 @@ class e_tree_model extends e_front_model
 		return (string) e107::getArrayStorage()->WriteArray($this->toArray($total), $AddSlashes);
 	}
 
-	public function update($from_post = true, $force = false, $session_messages = false)
+	public function update($field, $value, $ids, $syncvalue = null, $sanitize = true, $session_messages = false)
 	{
 	}
 
@@ -3775,61 +3818,6 @@ class e_tree_model extends e_front_model
 
 class e_front_tree_model extends e_tree_model
 {
-	/**
-	 * @var integer Last SQL error number
-	 */
-	protected $_db_errno = 0;
-
-	/**
-	 * @var string Last SQL error message
-	 */
-	protected $_db_errmsg = '';
-
-	/**
-	 * @var string Last SQL query
-	 */
-	protected $_db_qry = '';
-
-    /**
-     * @return boolean
-     */
-    public function hasSqlError()
-    {
-    	return !empty($this->_db_errno);
-    }
-
-    /**
-     * @return integer last mysql error number
-     */
-    public function getSqlErrorNumber()
-    {
-    	return $this->_db_errno;
-    }
-
-    /**
-     * @return string last mysql error message
-     */
-    public function getSqlError()
-    {
-    	return $this->_db_errmsg;
-    }
-
-    /**
-     * @return string last mysql error message
-     */
-    public function getSqlQuery()
-    {
-    	return $this->_db_qry;
-    }
-
-    /**
-     * @return boolean
-     */
-    public function hasError()
-    {
-    	return $this->hasSqlError();
-    }
-
 	/**
 	 * Batch update tree records/nodes
 	 * @param string $field field name
@@ -3909,8 +3897,6 @@ class e_front_tree_model extends e_tree_model
 
 class e_admin_tree_model extends e_front_tree_model
 {
-
-
 	/**
 	 * Batch Delete records
 	 * @param mixed $ids
@@ -3977,6 +3963,9 @@ class e_admin_tree_model extends e_front_tree_model
 
 	/**
 	 * Batch Copy Table Rows.
+     * @param array $ids
+     * @param bool $session_messages
+     * @return bool|int
 	 */
 	public function copy($ids, $session_messages = false)
 	{
@@ -4004,9 +3993,12 @@ class e_admin_tree_model extends e_front_tree_model
 		return $res;
 	}
 
-
 	/**
 	 * Get urls/url data for given nodes
+     * @param array $ids
+     * @param array $options
+     * @param bool $extended
+     * @return array
 	 */
     public function url($ids, $options = array(), $extended = false)
     {
@@ -4025,7 +4017,7 @@ class e_admin_tree_model extends e_front_tree_model
 
 	/**
 	 * Export Selected Data
-	 * @param $ids
+	 * @param array $ids
 	 * @return null
 	 */
 	public function export($ids)
